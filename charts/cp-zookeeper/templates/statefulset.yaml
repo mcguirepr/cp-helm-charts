@@ -113,10 +113,12 @@ spec:
           value: "{{ .Values.autoPurgeSnapRetainCount}}"
         - name : ZOOKEEPER_AUTOPURGE_PURGE_INTERVAL
           value: "{{ .Values.autoPurgePurgeInterval}}"
-        - name: ZOOKEEPER_CLIENT_PORT
+        - name : ZOOKEEPER_CLIENT_PORT
           value: "{{ .Values.clientPort }}"
         - name : ZOOKEEPER_SERVERS
           value: {{ template "cp-zookeeper.serverlist" . }}
+        - name : ZOOKEEPER_ELECTION_PORT_BIND_RETRY
+          value: "{{ .Values.electionPortBindRetry }}"
         # ZOOKEEPER_SERVER_ID is required just to pass cp-zookeeper ensure script for env check,
         # the value(metadata.mame) is not used and will be overwritten in command part
         - name: ZOOKEEPER_SERVER_ID
@@ -127,6 +129,7 @@ spec:
         - "bash"
         - "-c"
         - |
+          export _JAVA_OPTIONS="$_JAVA_OPTIONS -Dzookeeper.electionPortBindRetry="$ZOOKEEPER_ELECTION_PORT_BIND_RETRY""; \
           ZK_FIX_HOST_REGEX="s/${HOSTNAME}\.[^:]*:/0.0.0.0:/g"
           ZOOKEEPER_SERVER_ID=$((${HOSTNAME##*-}+1)) \
           ZOOKEEPER_SERVERS=`echo $ZOOKEEPER_SERVERS | sed -e "$ZK_FIX_HOST_REGEX"` \
